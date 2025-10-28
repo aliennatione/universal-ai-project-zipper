@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>UPZ0.3 - Universal AI Project Zipper</title>
+    <meta name="description" content="UPZ0.3: Your AI-powered software architect. Scaffold, refactor, and document entire projects from a simple idea, GitHub repo, local files, or an interactive chat." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E⚡️%3C/text%3E%3C/svg%3E" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://your-app-url.com/" />
+    <meta property="og:title" content="UPZ0.3 - Universal AI Project Zipper" />
+    <meta property="og:description" content="Your AI-powered software architect. Scaffold, refactor, and document entire projects from text, files, a GitHub repo, or an interactive AI chat." />
+    <meta property="og:image" content="https://your-app-url.com/social-preview.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://your-app-url.com/" />
+    <meta property="twitter:title" content="UPZ0.3 - Universal AI Project Zipper" />
+    <meta property="twitter:description" content="Your AI-powered software architect. Scaffold, refactor, and document entire projects from text, files, a GitHub repo, or an interactive AI chat." />
+    <meta property="twitter:image" content="https://your-app-url.com/social-preview.png" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/diff2html/3.4.47/diff2html.min.css" integrity="sha512-7kI/XQ0LG9e36M1O/6q2n1aQzhmvY5/b/+r4I9wYg+i3MAg7rplJpTBrpD5a3LzY_v7uDUw+d9yWwsc0+D/Qjg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+      // Applica immediatamente il tema da localStorage per prevenire il FOUC (Flash of Unstyled Content)
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              // --- TEMA v0.3.1 (Tono Caldo) ---
+              // Colori tema chiaro
+              'primary': '#fafaf9',      // stone-50
+              'secondary': '#ffffff',      // white
+              'tertiary': '#f5f5f4',      // stone-100
+              'primary-text': '#1c1917',   // stone-900
+              'secondary-text': '#78716c', // stone-500
+              'accent': '#65a30d',      // lime-600
+              'accent-hover': '#4d7c0f',   // lime-700
+              'accent-text': '#ffffff',     // white
+              'border-color': '#e7e5e4',   // stone-200
+              'danger': '#e53e3e',        // red-600
+              'danger-bg': '#fee2e2',       // red-100
+
+              // Colori tema scuro
+              'dark-primary': '#1c1917',      // stone-900
+              'dark-secondary': '#292524',    // stone-800
+              'dark-tertiary': '#44403c',     // stone-700
+              'dark-primary-text': '#f5f5f4',    // stone-100
+              'dark-secondary-text': '#a8a29e',  // stone-400
+              'dark-accent': '#84cc16',       // lime-500
+              'dark-accent-hover': '#a3e635',    // lime-400
+              'dark-accent-text': '#1c1917',      // stone-900 (miglior contrasto su lime-400)
+              'dark-border-color': '#57534e',    // stone-600
+              'dark-danger': '#ef4444',       // red-500
+              'dark-danger-bg': '#3f1212',
+            }
+          }
+        }
+      }
+    </script>
+
+<link rel="stylesheet" href="/index.css">
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.0.0",
+    "react/": "https://esm.sh/react@^19.0.0/",
+    "react-dom/": "https://esm.sh/react-dom@^19.0.0/",
+    "@google/genai": "https://esm.sh/@google/genai",
+    "diff": "https://esm.sh/diff@5.2.0",
+    "diff2html": "https://esm.sh/diff2html@3.4.47"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/universal-ai-project-zipper/assets/index-CRH_cC5S.js"></script>
+</head>
+  <body class="bg-gradient-to-br from-primary to-tertiary dark:from-dark-primary dark:to-dark-secondary text-primary-text dark:text-dark-primary-text antialiased transition-colors duration-300">
+    <div id="root"></div>
+  </body>
+</html>
