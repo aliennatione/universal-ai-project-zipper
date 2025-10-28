@@ -3,8 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # O il nome del tuo branch principale
-  workflow_dispatch: # Aggiunge la possibilità di trigger manuale
+      - master # CORRETTO: trigger sul branch master
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # O la versione di Node che preferisci
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
@@ -27,5 +27,5 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages # Il branch su cui verrà fatto il deploy
-          folder: dist # La cartella contenente i file di build
+          branch: gh-pages
+          folder: dist
