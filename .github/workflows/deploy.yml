@@ -3,22 +3,29 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # Or your default branch
+      - main # O il nome del tuo branch principale
+  workflow_dispatch: # Aggiunge la possibilità di trigger manuale
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install and Build 🔧 # Install dependencies and build the project
-        run: |
-          npm install
-          npm run build
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # O la versione di Node che preferisci
 
-      - name: Deploy 🚀
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: dist # The folder the action should deploy.
+          branch: gh-pages # Il branch su cui verrà fatto il deploy
+          folder: dist # La cartella contenente i file di build
