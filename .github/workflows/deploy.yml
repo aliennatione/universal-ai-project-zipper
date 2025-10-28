@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - master # O il nome del tuo branch principale
+      - main # O il nome del tuo branch principale
   workflow_dispatch: # Aggiunge la possibilità di trigger manuale
 
 jobs:
