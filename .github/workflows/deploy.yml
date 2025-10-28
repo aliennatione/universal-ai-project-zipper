@@ -3,10 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # Or your default branch
+      - master # O il nome del tuo branch principale
+  workflow_dispatch: # Aggiunge la possibilità di trigger manuale
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
