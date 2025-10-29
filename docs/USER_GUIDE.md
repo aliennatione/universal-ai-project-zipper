@@ -10,16 +10,20 @@ Benvenuto in UPZ0.3, il tuo architetto software potenziato dall'AI. Questa guida
     -   [Da un Repository GitHub](#da-un-repository-github)
     -   [Da una Chat Gemini (Link o File)](#da-una-chat-gemini-link-o-file)
     -   [Tramite Chat Interattiva con l'Architetto AI](#tramite-chat-interattiva-con-larchitetto-ai)
-2.  [Utilizzare l'Editor del Progetto](#2-utilizzare-leditor-del-progetto)
+2.  [Configurazione delle Chiavi API](#2-configurazione-delle-chiavi-api)
+    -   [Ottenere le Chiavi API](#ottenere-le-chiavi-api)
+    -   [Inserire le Chiavi nell'Applicazione](#inserire-le-chiavi-nellapplicazione)
+    -   [Nota sulla Sicurezza e Deploy](#nota-sulla-sicurezza-e-deploy)
+3.  [Utilizzare l'Editor del Progetto](#3-utilizzare-leditor-del-progetto)
     -   [L'Albero dei File](#lalbero-dei-file)
     -   [L'Editor di Codice](#leditor-di-codice)
     -   [Il Pannello Azioni AI](#il-pannello-azioni-ai)
-3.  [Configurazione Avanzata (Impostazioni AI)](#3-configurazione-avanzata-impostazioni-ai)
-    -   [Impostazioni Generali e Chiavi API](#impostazioni-generali-e-chiavi-api)
-    -   [Personalizzazione del Comportamento AI](#personalizzazione-del-comportamento-ai)
-4.  [Esportare il Tuo Progetto](#4-esportare-il-tuo-progetto)
+4.  [Configurazione Avanzata (Impostazioni AI)](#4-configurazione-avanzata-impostazioni-ai)
+    -   [Preset di Comportamento](#preset-di-comportamento)
+    -   [Personalizzazione dei Prompt](#personalizzazione-dei-prompt)
+5.  [Esportare il Tuo Progetto](#5-esportare-il-tuo-progetto)
     -   [Scaricare come ZIP](#scaricare-come-zip)
-    -   [**Novità**: Esportare su GitHub](#novità-esportare-su-github)
+    -   [Esportare su GitHub](#esportare-su-github)
 
 ---
 
@@ -29,63 +33,73 @@ UPZ0.3 offre diversi modi per iniziare a creare il tuo software. Scegli quello p
 
 ### Da una Semplice Idea (Input Testuale)
 
-Questo è il modo più rapido per vedere l'AI in azione.
-
 1.  Seleziona la scheda **"Incolla Testo"**.
-2.  Scrivi una breve descrizione del progetto che vuoi creare. Esempio: "Crea una semplice app React per le previsioni del tempo che utilizza un'API esterna".
-3.  (Opzionale) Nelle **Impostazioni AI**, assicurati che il prompt "Espansione Idea Progetto" sia abilitato per permettere all'AI di elaborare la tua idea in una struttura di file completa.
-4.  Clicca su **"Genera Progetto"**.
-
-L'AI espanderà la tua idea, genererà i file e ti porterà direttamente all'editor.
+2.  Scrivi una breve descrizione del progetto (es. "Crea una semplice app React per le previsioni del tempo").
+3.  Clicca su **"Genera Progetto"**.
 
 ### Da File Locali (Upload)
 
-Hai già un progetto esistente? Caricalo per documentarlo, refattorizzarlo o aggiungere nuove funzionalità.
-
 1.  Seleziona la scheda **"Carica File"**.
-2.  Trascina i tuoi file, una cartella intera o un archivio `.zip` nell'area di upload.
-3.  Se carichi un file `.zip`, puoi scegliere se decomprimerlo.
-4.  Clicca su **"Genera Progetto"**.
+2.  Trascina i tuoi file, una cartella intera o un archivio `.zip`.
+3.  Clicca su **"Genera Progetto"**.
 
 ### Da un Repository GitHub
 
-Lavora su qualsiasi repository GitHub pubblico senza doverlo clonare manualmente.
-
 1.  Seleziona la scheda **"Repository GitHub"**.
 2.  Incolla l'URL del repository (es. `https://github.com/facebook/react`).
-3.  Clicca su **"Recupera e Genera"**. L'applicazione scaricherà il repository come archivio `.zip` e lo elaborerà.
+3.  Clicca su **"Recupera e Genera"**.
 
 ### Da una Chat Gemini (Link o File)
 
-Trasforma una sessione di brainstorming o di pair programming con Gemini in un progetto funzionante. Hai due opzioni:
+Trasforma una conversazione con Gemini in un progetto.
+1.  In `gemini.google.com`, condividi la chat e copia il link pubblico o esportala come file.
+2.  In UPZ0.3, vai alla scheda **"Chat Gemini"**, incolla il link o carica il file.
 
-#### Opzione A: Importazione da Link di Condivisione (Consigliato)
-
-1.  In `gemini.google.com`, apri la conversazione che desideri utilizzare.
-2.  In alto a destra, clicca sull'icona **Condividi ed esporta**, poi su **Condividi**.
-3.  Crea un link pubblico.
-4.  Copia il link (es. `https://gemini.google.com/share/...`).
-5.  In UPZ0.3, vai alla scheda **"Chat Gemini"**, incolla il link nel campo apposito e clicca su **"Importa da Link"**.
-
-> **Nota Importante (Errore CORS)**: A causa di una misura di sicurezza standard dei browser chiamata CORS, il recupero diretto del contenuto da un link di un altro sito (come `gemini.google.com`) è spesso bloccato. Questo non dipende dal tuo account. Se l'importazione da link fallisce, **l'utilizzo dell'Opzione B (caricamento file) è l'alternativa più affidabile e funzionerà sempre.**
-
-#### Opzione B: Importazione da File Esportato
-
-1.  In `gemini.google.com`, apri la conversazione.
-2.  Clicca su **"⋮"** (tre puntini), poi **"Condividi ed esporta"**.
-3.  Esporta la chat. Puoi esportarla su Google Docs e poi scaricarla come file `.txt`, oppure usare estensioni del browser per salvarla come file `.md`.
-4.  In UPZ0.3, nella scheda **"Chat Gemini"**, clicca su **"Carica da File (.txt, .md)"** e seleziona il file appena scaricato.
+> **Nota su CORS**: Se l'importazione da link fallisce, utilizza il caricamento del file. È un'alternativa più affidabile.
 
 ### Tramite Chat Interattiva con l'Architetto AI
 
-Se la tua idea non è ancora ben definita, lascia che l'AI ti guidi.
+1.  Clicca su **"Apri Chat Architetto"**.
+2.  Rispondi alle domande dell'AI per definire i requisiti del tuo progetto.
+3.  Quando l'AI ha abbastanza informazioni, clicca su **"Genera Progetto"**.
 
-1.  Nella sezione "Parti da un'Idea o Esempio", clicca su **"Apri Chat Architetto"**.
-2.  Si aprirà una finestra di chat. L'AI ti porrà domande per definire i requisiti del tuo progetto (stack tecnologico, funzionalità, ecc.).
-3.  Rispondi alle domande. Quando l'AI riterrà di avere abbastanza informazioni, ti chiederà se può procedere.
-4.  A quel punto, potrai cliccare su **"Genera Progetto"** per creare la struttura basata sulla conversazione.
+---
 
-## 2. Utilizzare l'Editor del Progetto
+## 2. Configurazione delle Chiavi API
+
+Per utilizzare i modelli di intelligenza artificiale, è necessario fornire le proprie chiavi API. UPZ0.3 le salva in modo sicuro nel `localStorage` del tuo browser, quindi non vengono mai esposte o inviate a server esterni.
+
+### Ottenere le Chiavi API
+
+UPZ0.3 supporta diversi provider. Ecco dove trovare le chiavi:
+-   **Google Gemini**: Vai su [Google AI Studio](https://ai.google.dev/gemini-api/docs/api-key) per generare la tua chiave.
+-   **Altri Provider** (OpenRouter, Groq, Cohere, etc.): Accedi alla dashboard del rispettivo provider per creare e copiare la tua chiave API.
+
+### Inserire le Chiavi nell'Applicazione
+
+1.  Clicca sull'icona a forma di ingranaggio (⚙️) in alto a destra per aprire le **Impostazioni**.
+2.  Nella scheda **"Generali"**, scorri fino alla sezione **"Chiavi API"**.
+3.  Incolla la tua chiave API di Google nel campo **"Google API Key"**.
+4.  Aggiungi le altre chiavi API che desideri utilizzare nei campi corrispondenti.
+5.  Clicca su **"Salva"**. Le chiavi sono ora pronte per essere utilizzate.
+
+![Impostazioni Chiavi API](https://i.imgur.com/your-image-url.png) *Immagine illustrativa delle impostazioni delle chiavi API.*
+
+### Nota sulla Sicurezza e Deploy
+
+Se intendi clonare il repository di UPZ e fare il deploy della tua versione (ad esempio su Vercel, Netlify, o GitHub Pages), **non inserire mai le chiavi API direttamente nel codice sorgente**.
+
+Per un deploy sicuro, utilizza i **"Secrets"** o le **"Variabili d'Ambiente"** offerti dalla tua piattaforma di hosting:
+
+1.  **Crea una variabile d'ambiente**: Nominala `VITE_GOOGLE_API_KEY`.
+2.  **Assegna il valore**: Incolla la tua chiave API di Google come valore di questa variabile.
+3.  **Utilizzo nel codice**: L'applicazione è già configurata per leggere questa variabile (`import.meta.env.VITE_GOOGLE_API_KEY`) e usarla come valore predefinito. La chiave inserita nell'interfaccia utente avrà sempre la precedenza, permettendo a chiunque utilizzi la tua versione deployata di usare la propria chiave senza conoscere la tua.
+
+Questo approccio garantisce che la tua chiave rimanga segreta e ti permette di distribuire l'applicazione in modo sicuro.
+
+---
+
+## 3. Utilizzare l'Editor del Progetto
 
 Una volta generato il progetto, verrai reindirizzato alla vista Editor.
 
@@ -93,73 +107,51 @@ Una volta generato il progetto, verrai reindirizzato alla vista Editor.
 
 Sulla sinistra, vedrai l'intera struttura di cartelle e file del tuo progetto.
 - **Clicca su un file** per aprirlo nell'editor.
-- **Aggiungi un nuovo file** usando il pulsante in basso.
-- **Elimina un file** passando il mouse sul suo nome e cliccando sull'icona del cestino.
+- **Aggiungi un nuovo file** o **elimina un file** esistente.
 
 ### L'Editor di Codice
 
-Al centro, puoi visualizzare e modificare il contenuto del file selezionato.
-- L'editor supporta la sintassi per i linguaggi più comuni.
-- Ogni modifica che fai viene tracciata. Clicca su **"Salva Modifiche"** per confermare.
+Al centro, puoi visualizzare e modificare il contenuto del file selezionato. Ricorda di **salvare le modifiche**.
 
 ### Il Pannello Azioni AI
 
-Sulla destra, hai a disposizione un set di potenti strumenti AI da usare su richiesta:
-- **Suggerisci Nome**: Genera un nome creativo per il tuo progetto.
-- **Trova File**: Chiede all'AI di rianalizzare l'input originale per trovare file che potrebbero essere stati persi.
-- **Genera Wiki**: Crea una serie di file di documentazione `.md` (come `Home.md`, `Installation.md`, ecc.) basati sul contesto del progetto.
-- **Migliora README**: Se hai selezionato il file `README.md`, questa azione lo riscriverà per renderlo più chiaro e professionale.
-- **Refactoring Codice**: Se hai selezionato un file di codice, l'AI lo riscriverà per migliorarne la leggibilità, le performance e la manutenibilità, senza alterarne la funzionalità.
-- **Aggiungi Docstring**: Aggiunge commenti di documentazione a funzioni, classi e metodi nel file di codice selezionato.
-- **Scrivi Test**: Genera un nuovo file contenente test unitari per il file di codice selezionato.
-- **Revisione Codice**: L'AI analizzerà il file di codice selezionato e fornirà un feedback strutturato su potenziali bug, problemi di performance e aderenza alle best practice.
+Sulla destra, hai a disposizione un set di potenti strumenti AI:
+- **Suggerisci Nome**: Genera un nome creativo per il progetto.
+- **Genera Wiki**: Crea una documentazione completa in formato `.md`.
+- **Migliora README**: Riscrive il `README.md` per renderlo più professionale.
+- **Refactoring Codice**: Migliora la qualità del codice senza alterarne la funzionalità.
+- **Aggiungi Docstring**: Inserisce commenti di documentazione nel codice.
+- **Scrivi Test**: Genera test unitari per il file selezionato.
+- **Revisione Codice**: Fornisce un'analisi dettagliata del codice con suggerimenti per il miglioramento.
 
-## 3. Configurazione Avanzata (Impostazioni AI)
+---
 
-Clicca sull'icona a forma di ingranaggio per aprire le impostazioni.
+## 4. Configurazione Avanzata (Impostazioni AI)
 
-### Impostazioni Generali e Chiavi API
+Nelle Impostazioni (⚙️), la scheda **"Comportamento AI"** ti dà il controllo totale.
 
-In questa scheda puoi:
-- **Cambiare la lingua** dell'interfaccia.
-- **Impostare i modelli AI predefiniti** per le varie attività.
-- **Inserire le tue chiavi API** per i provider supportati (OpenRouter, Groq, ecc.). La chiave API di Google Gemini deve essere configurata tramite una variabile d'ambiente (`API_KEY`) per motivi di sicurezza.
-- **Aggiungere il tuo GitHub Personal Access Token** per abilitare l'esportazione su GitHub.
+### Preset di Comportamento
 
-Le tue chiavi sono salvate localmente nel tuo browser e non vengono mai inviate a nessun server.
+Scegli un preset (es. "Speedy Draft", "Documentation Pro") per attivare rapidamente configurazioni ottimizzate per diverse esigenze.
 
-### Personalizzazione del Comportamento AI
+### Personalizzazione dei Prompt
 
-Questa scheda ti dà il controllo totale sul "cervello" dell'applicazione.
-- **Preset**: Scegli un preset (es. "Speedy Draft", "Documentation Pro") per abilitare/disabilitare rapidamente gruppi di azioni AI.
-- **Prompt Individuali**: Puoi abilitare o disabilitare ogni singola azione AI. Cliccando su un'azione, puoi modificarne il **prompt**, ovvero le istruzioni esatte che vengono inviate all'AI. Puoi anche assegnare un provider e un modello specifico per ogni azione.
-- **Migliora con AI**: Usa la chat integrata per perfezionare i tuoi prompt personalizzati con l'aiuto dell'AI stessa.
+Per ogni azione AI, puoi:
+- **Abilitarla o disabilitarla**.
+- **Modificare il prompt**: Cambia le istruzioni inviate all'AI.
+- **Assegnare un provider e un modello specifico** (es. usare Gemini per la generazione del codice e un modello Groq più veloce per la traduzione).
 
-## 4. Esportare il Tuo Progetto
+---
 
-Quando sei soddisfatto del risultato, hai due opzioni.
+## 5. Esportare il Tuo Progetto
 
 ### Scaricare come ZIP
 
-Clicca sul pulsante **"Scarica Progetto"** in alto a destra nella vista Editor. L'intero progetto verrà scaricato come un singolo file `.zip`, pronto per essere utilizzato.
+Clicca su **"Scarica Progetto"** per ottenere un archivio `.zip` con tutti i file.
 
-### **Novità**: Esportare su GitHub
+### Esportare su GitHub
 
-Questa potente funzionalità ti permette di inviare il tuo progetto direttamente su GitHub.
+Invia il tuo progetto direttamente a un repository GitHub.
 
-#### A. Configurazione Iniziale (da fare una sola volta)
-
-1.  Vai nelle **Impostazioni** (icona ingranaggio) > **Impostazioni Generali**.
-2.  Scorri fino alla sezione **"Integrazioni"**.
-3.  Devi generare un **Personal Access Token (PAT)** su GitHub. Clicca sul link **"Crea un token"**, che ti porterà direttamente alla pagina corretta di GitHub con i permessi `repo` già selezionati.
-4.  Dai un nome al token (es. "UPZ AI Export") e clicca su "Generate token".
-5.  **Copia il token immediatamente** e incollalo nel campo "GitHub Personal Access Token" in UPZ.
-6.  Salva le impostazioni.
-
-#### B. Processo di Esportazione
-
-1.  Nella vista Editor, clicca sul pulsante **"Esporta su GitHub"**.
-2.  Nella finestra che si apre, scegli se vuoi:
-    - **Creare un Nuovo Repo**: Specifica il nome del nuovo repository (es. `tuo-username/il-mio-nuovo-progetto`), se deve essere pubblico o privato, il nome del branch e il messaggio di commit.
-    - **Push su Repo Esistente**: Inserisci il nome completo di un repository che già possiedi (es. `tuo-username/progetto-esistente`), il branch su cui effettuare il push e il messaggio di commit.
-3.  Clicca su **"Esporta"**. UPZ si occuperà di inviare tutti i file al repository specificato.
+1.  **Configurazione**: Nelle impostazioni, aggiungi un tuo **Personal Access Token (PAT)** di GitHub con permessi `repo`.
+2.  **Esportazione**: Clicca su **"Esporta su GitHub"**, scegli se creare un nuovo repository o aggiornarne uno esistente, e conferma.
