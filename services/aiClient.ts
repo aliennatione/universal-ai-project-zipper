@@ -96,13 +96,9 @@ export const listModels = async (provider: Provider, apiKey: string): Promise<st
     return [];
 };
 
-const getApiKeyForProvider = (settings: AppSettings, provider: Provider, model?: string): string => {
+const getApiKeyForProvider = (settings: AppSettings, provider: Provider): string => {
     switch(provider) {
-        case 'google':
-            if (model?.startsWith('gemini') && settings.geminiApiKey) {
-                return settings.geminiApiKey;
-            }
-            return settings.googleApiKey;
+        case 'google': return settings.googleApiKey;
         case 'openrouter': return settings.openRouterApiKey;
         case 'groq': return settings.groqApiKey;
         case 'together': return settings.togetherApiKey;
@@ -175,7 +171,7 @@ const executeOpenAICompatibleRequest = async (
  */
 export const performAiGeneration = async (request: AIRequest): Promise<AIResponse> => {
     const { provider, settings, model, prompt, jsonMode = false, systemInstruction, responseSchema } = request;
-    const apiKey = getApiKeyForProvider(settings, provider, model);
+    const apiKey = getApiKeyForProvider(settings, provider);
 
     if (!apiKey) throw new Error(`La chiave API per il provider ${provider} non è impostata.`);
 
@@ -243,7 +239,7 @@ export const performMultipartAiGeneration = async (request: MultipartAIRequest):
     if (provider !== 'google') {
         throw new Error('Le richieste multimodali sono attualmente supportate solo per il provider Google.');
     }
-    const apiKey = getApiKeyForProvider(settings, provider, model);
+    const apiKey = getApiKeyForProvider(settings, provider);
     if (!apiKey) throw new Error(`La chiave API per il provider ${provider} non è impostata.`);
 
     const client = getGoogleClient(apiKey);
@@ -289,7 +285,7 @@ type OpenAIChatMessage = {
  */
 export const performAiChat = async (request: AIChatRequest): Promise<AIResponse> => {
     const { provider, settings, model, messages, systemInstruction } = request;
-    const apiKey = getApiKeyForProvider(settings, provider, model);
+    const apiKey = getApiKeyForProvider(settings, provider);
 
     if (!apiKey) throw new Error(`La chiave API per il provider ${provider} non è impostata.`);
 
