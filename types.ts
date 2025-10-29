@@ -84,10 +84,12 @@ export interface AIPromptConfig {
 /**
  * Rappresenta le impostazioni globali dell'applicazione, incluse le credenziali API
  * e i modelli predefiniti per ciascun provider.
+ * 'geminiApiKey' può essere utilizzato per sovrascrivere 'googleApiKey' per i modelli Gemini.
  * @interface AppSettings
  */
 export interface AppSettings {
     googleApiKey: string;
+    geminiApiKey: string;
     openRouterApiKey: string;
     groqApiKey: string;
     togetherApiKey: string;
@@ -113,8 +115,7 @@ export interface AppSettings {
  */
 export interface Preset {
     name: 'Speedy Draft' | 'Code Generation' | 'Documentation Pro' | 'Test & Document' | 'Wiki Generator' | 'Code Polisher' | 'Full Power' | 'Personalized';
-    config: Partial<Record<keyof AIPromptConfig, { enabled?: boolean, provider?: Provider, model?: string }>>;
-}
+    config: Partial<Record<keyof AIPromptConfig, { enabled?: boolean, provider?: Provider, model?: string }>>;}
 
 /**
  * Rappresenta un suggerimento generato dall'AI, come un nuovo file.
