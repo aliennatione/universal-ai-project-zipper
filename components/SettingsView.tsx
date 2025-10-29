@@ -312,10 +312,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isOpen, onClose, ini
                             </div>
 
                             <h3 className="font-semibold text-base pt-4 border-t border-border-color dark:border-dark-border-color">{t('settings.apiKeys')}</h3>
-                            <APIKeyInput label={t('settings.googleApiKey')} value="" onChange={() => {}} isNote>
-                                {t('settings.googleApiEnvVar')} <a href="https://ai.google.dev/gemini-api/docs/api-key" target="_blank" rel="noopener noreferrer" className="text-accent dark:text-dark-accent font-bold underline">{t('settings.googleApiHelp')}</a>
-                            </APIKeyInput>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                                <APIKeyInput label={t('settings.googleApiKey')} value={settings.googleApiKey} onChange={(v) => setSetting('googleApiKey', v)} helpLink="https://ai.google.dev/gemini-api/docs/api-key" helpText={t('settings.googleApiHelp')}/>
                                 <APIKeyInput label={t('settings.openRouterApiKey')} value={settings.openRouterApiKey} onChange={(v) => setSetting('openRouterApiKey', v)} helpLink="https://openrouter.ai/keys" helpText={t('settings.openRouterApiHelp')}/>
                                 <APIKeyInput label={t('settings.groqApiKey')} value={settings.groqApiKey} onChange={(v) => setSetting('groqApiKey', v)} helpLink="https://console.groq.com/keys" helpText={t('settings.groqApiHelp')}/>
                                 <APIKeyInput label={t('settings.togetherApiKey')} value={settings.togetherApiKey} onChange={(v) => setSetting('togetherApiKey', v)} helpLink="https://api.together.xyz/settings/api-keys" helpText={t('settings.togetherApiHelp')}/>

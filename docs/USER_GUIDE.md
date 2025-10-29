@@ -83,8 +83,6 @@ UPZ0.3 supporta diversi provider. Ecco dove trovare le chiavi:
 4.  Aggiungi le altre chiavi API che desideri utilizzare nei campi corrispondenti.
 5.  Clicca su **"Salva"**. Le chiavi sono ora pronte per essere utilizzate.
 
-![Impostazioni Chiavi API](https://i.imgur.com/your-image-url.png) *Immagine illustrativa delle impostazioni delle chiavi API.*
-
 ### Nota sulla Sicurezza e Deploy
 
 Se intendi clonare il repository di UPZ e fare il deploy della tua versione (ad esempio su Vercel, Netlify, o GitHub Pages), **non inserire mai le chiavi API direttamente nel codice sorgente**.
