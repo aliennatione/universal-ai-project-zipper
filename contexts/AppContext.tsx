@@ -4,16 +4,6 @@ import { listModels } from '../services/aiClient';
 import { promptsConfig, presets } from '../services/prompts';
 import { getTranslations, Language } from '../services/i18n';
 
-/**
- * @file Fornisce un Context React per la gestione dello stato globale dell'applicazione.
- * Questo include le impostazioni dell'utente, la configurazione dell'AI e i dati correlati.
- * @module AppContext
- */
-
-/**
- * @interface AppContextType
- * Definisce la forma dello stato e delle funzioni di callback fornite dal AppContext.
- */
 interface AppContextType {
     appSettings: AppSettings;
     aiConfig: AIPromptConfig;
@@ -30,48 +20,32 @@ interface AppContextType {
     handleModelChange: (id: keyof AIPromptConfig, model: string) => void;
 }
 
-/**
- * Context per lo stato globale dell'applicazione.
- * @type {React.Context<AppContextType | undefined>}
- */
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const initialSettings: AppSettings = {
-    googleApiKey: '', // This will be populated from process.env
+    googleApiKey: import.meta.env.VITE_GOOGLE_API_KEY || '',
     openRouterApiKey: '',
     groqApiKey: '',
     togetherApiKey: '',
     perplexityApiKey: '',
     cohereApiKey: '',
-    // FIX: Add missing 'githubPat' property to align with the AppSettings interface.
     githubPat: '',
     defaultProvider: 'google',
-    defaultModel: 'gemini-2.5-flash',
+    defaultModel: 'gemini-1.5-flash',
     promptImprovementProvider: 'google',
-    promptImprovementModel: 'gemini-2.5-flash',
+    promptImprovementModel: 'gemini-1.5-flash',
     architectProvider: 'google',
-    architectModel: 'gemini-2.5-flash',
+    architectModel: 'gemini-1.5-flash',
     globalLanguage: 'it',
 };
 
-/**
- * Il provider del context che incapsula tutta la logica di stato per le impostazioni e la configurazione dell'AI.
- * @param {object} props - Le props del componente React.
- * @param {ReactNode} props.children - I componenti figli che avranno accesso a questo context.
- * @returns {JSX.Element}
- */
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isLoadingSettings, setIsLoadingSettings] = useState(true);
     const [appSettings, setAppSettings] = useState<AppSettings>(initialSettings);
     const [configBaseSettings, setConfigBaseSettings] = useState<AppSettings | null>(null);
     
     const [modelsByProvider, setModelsByProvider] = useState<Record<Provider, string[]>>({
-        google: ['gemini-2.5-flash'],
-        openrouter: [],
-        groq: [],
-        together: [],
-        perplexity: [],
-        cohere: [],
+        google: ['gemini-1.5-flash'], openrouter: [], groq: [], together: [], perplexity: [], cohere: [],
     });
     
     const [aiConfig, setAiConfig] = useState<AIPromptConfig>(promptsConfig(getTranslations(initialSettings.globalLanguage)));
@@ -86,29 +60,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (template === undefined) return key;
             template = template[part];
         }
-        if (typeof template === 'function') {
-            return template(...args);
-        }
+        if (typeof template === 'function') return template(...args);
         return template || key;
     }, [translations]);
 
-    // Carica le impostazioni iniziali e il preset
     useEffect(() => {
         let settingsToLoad = { ...initialSettings };
         try {
             const savedSettingsJSON = localStorage.getItem('upz-settings');
             if (savedSettingsJSON) {
-                // Parse saved settings but exclude googleApiKey
-                const { googleApiKey, ...savedSettings } = JSON.parse(savedSettingsJSON);
+                const savedSettings = JSON.parse(savedSettingsJSON);
+                // La chiave salvata dall'utente ha la precedenza sulla variabile d'ambiente
                 settingsToLoad = { ...settingsToLoad, ...savedSettings };
+                if (!savedSettings.googleApiKey) {
+                    settingsToLoad.googleApiKey = import.meta.env.VITE_GOOGLE_API_KEY || '';
+                }
             }
         } catch (e) {
             console.error("Failed to parse settings from localStorage, resetting to defaults.", e);
             localStorage.removeItem('upz-settings');
         }
-        
-        // Always set the Google API key from the environment
-        settingsToLoad.googleApiKey = process.env.API_KEY || '';
         
         const lang = settingsToLoad.globalLanguage || 'it';
         const currentTranslations = getTranslations(lang as Language);
@@ -136,10 +107,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setIsLoadingSettings(false);
     }, []);
 
-    // Aggiorna la configurazione AI quando la lingua cambia
     useEffect(() => {
         setAiConfig(promptsConfig(translations, appSettings));
-        // Ricarica il preset corrente per applicare le traduzioni
         const currentPreset = presets.find(p => p.name === selectedPreset);
         if (currentPreset) {
             handleSelectPreset(currentPreset, true);
@@ -151,7 +120,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         
         setSelectedPreset(preset.name);
         setAiConfig(() => {
-            const newConfig = promptsConfig(translations, appSettings); // Inizia dalla configurazione di base
+            const newConfig = promptsConfig(translations, appSettings);
             for (const key in preset.config) {
                 const promptKey = key as keyof AIPromptConfig;
                 if (newConfig[promptKey]) {
@@ -181,12 +150,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const results = await Promise.all(promises);
 
             setModelsByProvider({
-                google: results[0].length > 0 ? results[0] : ['gemini-2.5-flash'],
-                openrouter: results[1],
-                groq: results[2],
-                together: results[3],
-                perplexity: results[4],
-                cohere: results[5],
+                google: results[0].length > 0 ? results[0] : ['gemini-1.5-flash'],
+                openrouter: results[1], groq: results[2], together: results[3], perplexity: results[4], cohere: results[5],
             });
         };
         fetchAllModels();
@@ -194,10 +159,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const handleSaveSettings = useCallback((newSettings: AppSettings) => {
         setAiConfig(currentConfig => {
-            const oldDefaults = {
-                provider: configBaseSettings?.defaultProvider || 'google',
-                model: configBaseSettings?.defaultModel || 'gemini-2.5-flash'
-            };
+            const oldDefaults = { provider: configBaseSettings?.defaultProvider || 'google', model: configBaseSettings?.defaultModel || 'gemini-1.5-flash' };
             const newDefaults = { provider: newSettings.defaultProvider, model: newSettings.defaultModel };
 
             if (oldDefaults.provider === newDefaults.provider && oldDefaults.model === newDefaults.model) {
@@ -225,15 +187,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             newSettings.architectModel = newSettings.defaultModel;
         }
 
-        // Keep the googleApiKey from the environment, don't save the user's input for it
-        const finalSettings = { ...newSettings, googleApiKey: process.env.API_KEY || '' };
+        setAppSettings(newSettings);
+        setConfigBaseSettings(newSettings);
         
-        setAppSettings(finalSettings);
-        setConfigBaseSettings(finalSettings);
-        
-        // Save to localStorage without the Google API key
-        const { googleApiKey, ...settingsToSave } = finalSettings;
-        localStorage.setItem('upz-settings', JSON.stringify(settingsToSave));
+        // Ora salva TUTTE le impostazioni, inclusa la chiave Google, nel localStorage.
+        localStorage.setItem('upz-settings', JSON.stringify(newSettings));
     }, [configBaseSettings]);
 
     const handlePromptChange = useCallback((id: keyof AIPromptConfig, newContent: string) => {
@@ -258,42 +216,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, []);
 
     const value = useMemo(() => ({
-        appSettings,
-        aiConfig,
-        modelsByProvider,
-        isLoadingSettings,
-        selectedPreset,
-        presets,
-        t,
-        handleSaveSettings,
-        handleSelectPreset,
-        handlePromptChange,
-        handleTogglePrompt,
-        handleProviderChange,
-        handleModelChange,
+        appSettings, aiConfig, modelsByProvider, isLoadingSettings, selectedPreset, presets, t,
+        handleSaveSettings, handleSelectPreset, handlePromptChange, handleTogglePrompt, handleProviderChange, handleModelChange,
     }), [
-        appSettings,
-        aiConfig,
-        modelsByProvider,
-        isLoadingSettings,
-        selectedPreset,
-        t,
-        handleSaveSettings,
-        handleSelectPreset,
-        handlePromptChange,
-        handleTogglePrompt,
-        handleProviderChange,
-        handleModelChange
+        appSettings, aiConfig, modelsByProvider, isLoadingSettings, selectedPreset, t, presets,
+        handleSaveSettings, handleSelectPreset, handlePromptChange, handleTogglePrompt, handleProviderChange, handleModelChange
     ]);
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
-/**
- * Hook personalizzato per accedere facilmente al AppContext.
- * @returns {AppContextType} Lo stato e le funzioni del context.
- * @throws Se utilizzato al di fuori di un AppProvider.
- */
 export const useAppContext = (): AppContextType => {
     const context = useContext(AppContext);
     if (context === undefined) {
