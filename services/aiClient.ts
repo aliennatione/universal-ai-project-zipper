@@ -25,7 +25,6 @@ const getGoogleClient = (apiKey: string): GoogleGenAI => {
 
 const PROVIDER_CONFIG = {
     google: {
-        models: ['gemini-1.5-flash']
     },
     openrouter: {
         baseURL: 'https://openrouter.ai/api/v1',
@@ -41,6 +40,32 @@ const PROVIDER_CONFIG = {
     },
     cohere: {
         baseURL: 'https://api.cohere.com/v1',
+    }
+};
+
+const fetchGoogleModels = async (apiKey: string): Promise<string[]> => {
+    try {
+        const client = getGoogleClient(apiKey);
+        const models = await client.models.list();
+
+        const result: string[] = [];
+
+        for await (const model of models) {
+            if (
+                model.name &&
+                model.supportedActions?.includes('generateContent')
+            ) {
+                result.push(
+                    model.name.replace(/^models\//, '')
+                );
+            }
+        }
+
+        return result.sort();
+
+    } catch (error) {
+        console.error("Errore recupero modelli Google:", error);
+        return [];
     }
 };
 
@@ -81,7 +106,7 @@ export const listModels = async (provider: Provider, apiKey: string): Promise<st
     if (!apiKey) return [];
     
     if (provider === 'google') {
-        return PROVIDER_CONFIG.google.models;
+        return fetchGoogleModels(apiKey);
     }
 
     if (provider === 'cohere') {
