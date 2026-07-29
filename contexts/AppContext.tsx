@@ -104,13 +104,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     const saveToLocalStorage = useCallback((settings: AppSettings, config: AIPromptConfig, presetName: Preset['name'] | null) => {
         try {
-            localStorage.setItem('upz-settings', JSON.stringify({
+            const data = {
                 appSettings: settings,
-                // Only persist the user-configurable fields; title/description/id are
-                // regenerated from prompts.ts on every boot, avoiding stale data.
                 aiConfig: extractPersistableAiConfig(config),
                 selectedPreset: presetName
-            }));
+            };
+            console.log('[DEBUG] saveToLocalStorage - defaultModel:', settings.defaultModel);
+            console.log('[DEBUG] saveToLocalStorage - prompt models:', Object.fromEntries(Object.entries(extractPersistableAiConfig(config)).map(([k, v]) => [k, v.model])));
+            localStorage.setItem('upz-settings', JSON.stringify(data));
+            const verify = JSON.parse(localStorage.getItem('upz-settings')!);
+            console.log('[DEBUG] saveToLocalStorage - verify readback defaultModel:', verify.appSettings.defaultModel);
         } catch (e) {
             console.error("Failed to save settings to localStorage", e);
         }
@@ -147,6 +150,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 if (parsed.selectedPreset !== undefined) {
                     loadedPreset = parsed.selectedPreset;
                 }
+                console.log('[DEBUG] loadSettings - defaultModel:', settingsToLoad.defaultModel);
+                console.log('[DEBUG] loadSettings - hasLoadedAiConfig:', !!loadedAiConfig);
+                if (loadedAiConfig) {
+                    console.log('[DEBUG] loadSettings - loaded prompt models:', Object.fromEntries(Object.entries(loadedAiConfig).map(([k, v]) => [k, (v as any).model])));
+                }
+            } else {
+                console.log('[DEBUG] loadSettings - no saved data, using defaults. defaultModel:', settingsToLoad.defaultModel);
             }
         } catch (e) {
             console.error("Failed to parse settings from localStorage, resetting to defaults.", e);
