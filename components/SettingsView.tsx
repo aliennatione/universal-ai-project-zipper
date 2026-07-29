@@ -247,7 +247,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isOpen, onClose, ini
             setDraftSelectedPreset(selectedPreset);
             setActiveTab(initialTab);
         }
-    }, [isOpen, appSettings, aiConfig, selectedPreset, initialTab]);
+    }, [isOpen, initialTab]);
 
     if (!isOpen) return null;
 

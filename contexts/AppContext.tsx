@@ -260,28 +260,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const updatedConfig = newAiConfig ? { ...newAiConfig } : { ...aiConfig };
         const updatedPreset = newPreset !== undefined ? newPreset : selectedPreset;
 
-        const oldDefaults = { provider: configBaseSettings?.defaultProvider || 'google', model: configBaseSettings?.defaultModel || 'gemini-2.5-flash' };
-        const newDefaults = { provider: newSettings.defaultProvider, model: newSettings.defaultModel };
 
-        if (oldDefaults.provider !== newDefaults.provider || oldDefaults.model !== newDefaults.model) {
-            for (const key in updatedConfig) {
-                const promptKey = key as keyof AIPromptConfig;
-                const prompt = updatedConfig[promptKey];
-                
-                if (prompt.provider === oldDefaults.provider && prompt.model === oldDefaults.model) {
-                    updatedConfig[promptKey] = { ...prompt, provider: newDefaults.provider, model: newDefaults.model };
-                }
-            }
-        }
-
-        if (configBaseSettings?.promptImprovementProvider === configBaseSettings?.defaultProvider && configBaseSettings?.promptImprovementModel === configBaseSettings?.defaultModel) {
-            newSettings.promptImprovementProvider = newSettings.defaultProvider;
-            newSettings.promptImprovementModel = newSettings.defaultModel;
-        }
-        if (configBaseSettings?.architectProvider === configBaseSettings?.defaultProvider && configBaseSettings?.architectModel === configBaseSettings?.defaultModel) {
-            newSettings.architectProvider = newSettings.defaultProvider;
-            newSettings.architectModel = newSettings.defaultModel;
-        }
 
         // FIX: Guard against empty model strings (can happen when a provider has no
         // models fetched yet and the select defaults to '').
