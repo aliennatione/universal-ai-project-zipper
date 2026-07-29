@@ -22,6 +22,15 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const KNOWN_APP_SETTINGS_KEYS: (keyof AppSettings)[] = [
+    'googleApiKey', 'openRouterApiKey', 'groqApiKey', 'togetherApiKey',
+    'perplexityApiKey', 'cohereApiKey', 'githubPat',
+    'defaultProvider', 'defaultModel',
+    'promptImprovementProvider', 'promptImprovementModel',
+    'architectProvider', 'architectModel',
+    'globalLanguage',
+];
+
 const initialSettings: AppSettings = {
     googleApiKey: import.meta.env.VITE_GOOGLE_API_KEY || '',
     openRouterApiKey: '',
@@ -31,13 +40,42 @@ const initialSettings: AppSettings = {
     cohereApiKey: '',
     githubPat: '',
     defaultProvider: 'google',
-    defaultModel: 'gemini-1.5-flash',
+    defaultModel: 'gemini-2.5-flash',
     promptImprovementProvider: 'google',
-    promptImprovementModel: 'gemini-1.5-flash',
+    promptImprovementModel: 'gemini-2.5-flash',
     architectProvider: 'google',
-    architectModel: 'gemini-1.5-flash',
+    architectModel: 'gemini-2.5-flash',
     globalLanguage: 'it',
 };
+
+/**
+ * Extracts only the user-configurable fields from an aiConfig prompt entry.
+ * Avoids serializing large content strings unless modified, and strips derived
+ * fields (title, description, id) that are regenerated from prompts.ts on load.
+ */
+type PromptPersistable = {
+    enabled: boolean;
+    provider: Provider;
+    model: string;
+    content: string;
+};
+
+type AiConfigPersisted = Partial<Record<keyof AIPromptConfig, PromptPersistable>>;
+
+function extractPersistableAiConfig(aiConfig: AIPromptConfig): AiConfigPersisted {
+    const result: AiConfigPersisted = {};
+    for (const key in aiConfig) {
+        const promptKey = key as keyof AIPromptConfig;
+        const prompt = aiConfig[promptKey];
+        result[promptKey] = {
+            enabled: prompt.enabled,
+            provider: prompt.provider,
+            model: prompt.model,
+            content: prompt.content,
+        };
+    }
+    return result;
+}
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isLoadingSettings, setIsLoadingSettings] = useState(true);
@@ -45,7 +83,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [configBaseSettings, setConfigBaseSettings] = useState<AppSettings | null>(null);
     
     const [modelsByProvider, setModelsByProvider] = useState<Record<Provider, string[]>>({
-        google: ['gemini-1.5-flash'], openrouter: [], groq: [], together: [], perplexity: [], cohere: [],
+        google: ['gemini-2.5-flash'], openrouter: [], groq: [], together: [], perplexity: [], cohere: [],
     });
     
     const [aiConfig, setAiConfig] = useState<AIPromptConfig>(promptsConfig(getTranslations(initialSettings.globalLanguage)));
@@ -68,7 +106,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         try {
             localStorage.setItem('upz-settings', JSON.stringify({
                 appSettings: settings,
-                aiConfig: config,
+                // Only persist the user-configurable fields; title/description/id are
+                // regenerated from prompts.ts on every boot, avoiding stale data.
+                aiConfig: extractPersistableAiConfig(config),
                 selectedPreset: presetName
             }));
         } catch (e) {
@@ -78,16 +118,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     useEffect(() => {
         let settingsToLoad = { ...initialSettings };
-        let loadedAiConfig: AIPromptConfig | null = null;
+        let loadedAiConfig: AiConfigPersisted | null = null;
         let loadedPreset: Preset['name'] | null = null;
 
         try {
             const savedSettingsJSON = localStorage.getItem('upz-settings');
             if (savedSettingsJSON) {
                 const parsed = JSON.parse(savedSettingsJSON);
-                const savedSettings = parsed.appSettings || parsed;
-                settingsToLoad = { ...settingsToLoad, ...savedSettings };
-                if (!savedSettings.googleApiKey) {
+
+                // FIX: Only copy known AppSettings keys to avoid contaminating
+                // settingsToLoad with aiConfig/selectedPreset from the old format
+                // where `parsed` itself was the settings object.
+                const rawSettings = parsed.appSettings || parsed;
+                const cleanSettings: Partial<AppSettings> = {};
+                for (const k of KNOWN_APP_SETTINGS_KEYS) {
+                    if (rawSettings[k] !== undefined) {
+                        (cleanSettings as any)[k] = rawSettings[k];
+                    }
+                }
+                settingsToLoad = { ...settingsToLoad, ...cleanSettings };
+
+                if (!settingsToLoad.googleApiKey) {
                     settingsToLoad.googleApiKey = import.meta.env.VITE_GOOGLE_API_KEY || '';
                 }
                 if (parsed.aiConfig) {
@@ -118,9 +169,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 for (const key in loadedAiConfig) {
                     const promptKey = key as keyof AIPromptConfig;
                     if (mergedConfig[promptKey]) {
+                        const saved = loadedAiConfig[promptKey]!;
                         mergedConfig[promptKey] = {
                             ...mergedConfig[promptKey],
-                            ...loadedAiConfig[promptKey]
+                            enabled: saved.enabled ?? mergedConfig[promptKey].enabled,
+                            provider: saved.provider ?? mergedConfig[promptKey].provider,
+                            // FIX: Only restore model if it's a non-empty string
+                            model: saved.model || mergedConfig[promptKey].model,
+                            content: saved.content ?? mergedConfig[promptKey].content,
                         };
                     }
                 }
@@ -179,7 +235,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const results = await Promise.all(promises);
 
             setModelsByProvider({
-                google: results[0].length > 0 ? results[0] : ['gemini-1.5-flash'],
+                google: results[0].length > 0 ? results[0] : ['gemini-2.5-flash'],
                 openrouter: results[1], groq: results[2], together: results[3], perplexity: results[4], cohere: results[5],
             });
         };
@@ -194,7 +250,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const updatedConfig = newAiConfig ? { ...newAiConfig } : { ...aiConfig };
         const updatedPreset = newPreset !== undefined ? newPreset : selectedPreset;
 
-        const oldDefaults = { provider: configBaseSettings?.defaultProvider || 'google', model: configBaseSettings?.defaultModel || 'gemini-1.5-flash' };
+        const oldDefaults = { provider: configBaseSettings?.defaultProvider || 'google', model: configBaseSettings?.defaultModel || 'gemini-2.5-flash' };
         const newDefaults = { provider: newSettings.defaultProvider, model: newSettings.defaultModel };
 
         if (oldDefaults.provider !== newDefaults.provider || oldDefaults.model !== newDefaults.model) {
@@ -215,6 +271,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (configBaseSettings?.architectProvider === configBaseSettings?.defaultProvider && configBaseSettings?.architectModel === configBaseSettings?.defaultModel) {
             newSettings.architectProvider = newSettings.defaultProvider;
             newSettings.architectModel = newSettings.defaultModel;
+        }
+
+        // FIX: Guard against empty model strings (can happen when a provider has no
+        // models fetched yet and the select defaults to '').
+        for (const key in updatedConfig) {
+            const promptKey = key as keyof AIPromptConfig;
+            if (!updatedConfig[promptKey].model) {
+                updatedConfig[promptKey] = { ...updatedConfig[promptKey], model: newSettings.defaultModel };
+            }
         }
 
         setAppSettings(newSettings);

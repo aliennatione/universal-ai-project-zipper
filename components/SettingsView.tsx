@@ -68,7 +68,12 @@ const ModelSelector: React.FC<{
     modelsByProvider: Record<Provider, string[]>;
 }> = ({ label, description, selectedProvider, selectedModel, onProviderChange, onModelChange, modelsByProvider }) => {
     const { t } = useAppContext();
-    const availableModels = modelsByProvider[selectedProvider] || [];
+    const fetchedModels = modelsByProvider[selectedProvider] || [];
+    // Always include the currently saved model as an option, even if not yet in the fetched list.
+    // This prevents the select from silently resetting to a different value on re-render.
+    const availableModels = fetchedModels.includes(selectedModel) || !selectedModel
+        ? fetchedModels
+        : [selectedModel, ...fetchedModels];
 
     const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newProvider = e.target.value as Provider;
@@ -95,7 +100,7 @@ const ModelSelector: React.FC<{
                 </div>
                 <div>
                     <label className="text-xs font-medium">{t('promptEditor.model')}</label>
-                    <select value={selectedModel} onChange={(e) => onModelChange(e.target.value)} disabled={availableModels.length === 0} className="w-full text-xs bg-secondary dark:bg-dark-secondary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent disabled:opacity-50">
+                    <select value={selectedModel} onChange={(e) => onModelChange(e.target.value)} className="w-full text-xs bg-secondary dark:bg-dark-secondary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent">
                         {availableModels.length > 0 ? (availableModels.map(m => <option key={m} value={m}>{m}</option>)) : (<option value="">{t('promptEditor.noModelFound')}</option>)}
                     </select>
                 </div>
@@ -126,7 +131,11 @@ const PromptEditor: React.FC<{
     onModelChange
 }) => {
     const { t, modelsByProvider } = useAppContext();
-    const availableModels = modelsByProvider[currentPromptState.provider] || [];
+    const fetchedModels = modelsByProvider[currentPromptState.provider] || [];
+    // Always include the currently saved model so the select always reflects true state.
+    const availableModels = fetchedModels.includes(currentPromptState.model) || !currentPromptState.model
+        ? fetchedModels
+        : [currentPromptState.model, ...fetchedModels];
     const [isOpen, setIsOpen] = useState(false);
     
     return (
@@ -160,7 +169,7 @@ const PromptEditor: React.FC<{
                         </div>
                          <div>
                             <label className="text-xs font-medium">{t('promptEditor.model')}</label>
-                            <select value={currentPromptState.model} onChange={(e) => onModelChange(prompt.id, e.target.value)} disabled={isTranslating || !currentPromptState.enabled || availableModels.length === 0} className="w-full text-xs bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent disabled:opacity-50">
+                            <select value={currentPromptState.model} onChange={(e) => onModelChange(prompt.id, e.target.value)} disabled={isTranslating || !currentPromptState.enabled} className="w-full text-xs bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent disabled:opacity-50">
                                 {availableModels.length > 0 ? (availableModels.map(m => <option key={m} value={m}>{m}</option>)) : (<option value="">{t('promptEditor.noModelFound')}</option>)}
                             </select>
                         </div>
