@@ -11,18 +11,30 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          # Fetch full history so `git rev-parse --short HEAD` works in vite.config.ts
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
+        env:
+          # Pass the Google API key from repository secrets (optional, users set their own key in settings)
+          VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY }}
+
+      # GitHub Pages ignores files/dirs starting with `_` by default (Jekyll).
+      # Adding .nojekyll ensures the hashed JS assets (in /assets/) are served correctly.
+      - name: Disable Jekyll processing
+        run: touch dist/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

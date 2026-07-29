@@ -275,6 +275,10 @@ const App: React.FC = () => {
               <div className="text-left">
                   <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-text dark:text-dark-primary-text">UPZ<span className="text-accent dark:text-dark-accent">AI</span><sup className="font-light text-lg sm:text-xl -top-2">0.3</sup></h1>
                   <p className="mt-1 text-md text-secondary-text dark:text-dark-secondary-text">{t('headerSubtitle')}</p>
+                  <p className="mt-0.5 text-xs font-mono text-secondary-text/60 dark:text-dark-secondary-text/50 select-all" title={`Build time: ${new Date(__BUILD_TIME__).toLocaleString()}`}>
+                      build&nbsp;<span className="text-accent/70 dark:text-dark-accent/60">{__BUILD_HASH__}</span>
+                      &nbsp;·&nbsp;{new Date(__BUILD_TIME__).toLocaleDateString('en-CA')}
+                  </p>
               </div>
           </div>
           <div className="flex items-center gap-2">
