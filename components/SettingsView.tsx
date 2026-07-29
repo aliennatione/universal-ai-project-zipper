@@ -106,12 +106,26 @@ const ModelSelector: React.FC<{
 
 const PromptEditor: React.FC<{ 
     prompt: EditablePrompt; 
+    currentPromptState: AIPromptConfig[keyof AIPromptConfig];
     isTranslating: boolean;
     onTranslate: (lang: 'English' | 'Italian') => void; 
     onImproveRequest: () => void;
-}> = ({ prompt, isTranslating, onTranslate, onImproveRequest }) => {
-    const { t, aiConfig, modelsByProvider, handlePromptChange, handleTogglePrompt, handleProviderChange, handleModelChange } = useAppContext();
-    const currentPromptState = aiConfig[prompt.id];
+    onPromptChange: (id: keyof AIPromptConfig, newContent: string) => void;
+    onTogglePrompt: (id: keyof AIPromptConfig) => void;
+    onProviderChange: (id: keyof AIPromptConfig, provider: Provider) => void;
+    onModelChange: (id: keyof AIPromptConfig, model: string) => void;
+}> = ({
+    prompt,
+    currentPromptState,
+    isTranslating,
+    onTranslate,
+    onImproveRequest,
+    onPromptChange,
+    onTogglePrompt,
+    onProviderChange,
+    onModelChange
+}) => {
+    const { t, modelsByProvider } = useAppContext();
     const availableModels = modelsByProvider[currentPromptState.provider] || [];
     const [isOpen, setIsOpen] = useState(false);
     
@@ -119,7 +133,7 @@ const PromptEditor: React.FC<{
         <div className="bg-tertiary dark:bg-dark-tertiary p-4 rounded-lg">
             <button onClick={() => setIsOpen(prev => !prev)} className="w-full flex justify-between items-center text-left" aria-expanded={isOpen}>
                 <div className="flex items-center gap-4">
-                    <div onClick={(e) => { e.stopPropagation(); handleTogglePrompt(prompt.id); }} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${currentPromptState.enabled ? 'bg-accent' : 'bg-gray-400 dark:bg-gray-600'}`}>
+                    <div onClick={(e) => { e.stopPropagation(); onTogglePrompt(prompt.id); }} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${currentPromptState.enabled ? 'bg-accent' : 'bg-gray-400 dark:bg-gray-600'}`}>
                         <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${currentPromptState.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
                     </div>
                     <label className="font-semibold">{currentPromptState.title}</label>
@@ -135,7 +149,7 @@ const PromptEditor: React.FC<{
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-xs font-medium">{t('promptEditor.provider')}</label>
-                            <select value={currentPromptState.provider} onChange={(e) => handleProviderChange(prompt.id, e.target.value as Provider)} disabled={isTranslating || !currentPromptState.enabled} className="w-full text-xs bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent disabled:opacity-50">
+                            <select value={currentPromptState.provider} onChange={(e) => onProviderChange(prompt.id, e.target.value as Provider)} disabled={isTranslating || !currentPromptState.enabled} className="w-full text-xs bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent disabled:opacity-50">
                                 <option value="google">Google</option>
                                 <option value="openrouter">OpenRouter</option>
                                 <option value="groq">Groq</option>
@@ -146,12 +160,12 @@ const PromptEditor: React.FC<{
                         </div>
                          <div>
                             <label className="text-xs font-medium">{t('promptEditor.model')}</label>
-                            <select value={currentPromptState.model} onChange={(e) => handleModelChange(prompt.id, e.target.value)} disabled={isTranslating || !currentPromptState.enabled || availableModels.length === 0} className="w-full text-xs bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent disabled:opacity-50">
+                            <select value={currentPromptState.model} onChange={(e) => onModelChange(prompt.id, e.target.value)} disabled={isTranslating || !currentPromptState.enabled || availableModels.length === 0} className="w-full text-xs bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-md px-2 py-1.5 focus:ring-accent focus:border-accent disabled:opacity-50">
                                 {availableModels.length > 0 ? (availableModels.map(m => <option key={m} value={m}>{m}</option>)) : (<option value="">{t('promptEditor.noModelFound')}</option>)}
                             </select>
                         </div>
                     </div>
-                    <textarea value={currentPromptState.content} onChange={(e) => handlePromptChange(prompt.id, e.target.value)} className="w-full h-40 bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-lg p-3 text-sm font-mono focus:ring-accent focus:border-accent" disabled={isTranslating || !currentPromptState.enabled} />
+                    <textarea value={currentPromptState.content} onChange={(e) => onPromptChange(prompt.id, e.target.value)} className="w-full h-40 bg-primary dark:bg-dark-primary border border-border-color dark:border-dark-border-color rounded-lg p-3 text-sm font-mono focus:ring-accent focus:border-accent" disabled={isTranslating || !currentPromptState.enabled} />
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <button onClick={() => onTranslate('English')} disabled={isTranslating || !currentPromptState.enabled} className="text-xs px-3 py-1 bg-secondary dark:bg-dark-secondary hover:bg-border-color dark:hover:bg-dark-border-color rounded-md transition-colors disabled:opacity-50">{t('promptEditor.translateToEN')}</button>
@@ -169,8 +183,12 @@ const PromptEditor: React.FC<{
     );
 };
 
-const PresetSelector: React.FC<{ presets: Preset[] }> = ({ presets }) => {
-    const { t, selectedPreset, handleSelectPreset } = useAppContext();
+const PresetSelector: React.FC<{
+    presets: Preset[];
+    selectedPreset: Preset['name'] | null;
+    onSelectPreset: (preset: Preset) => void;
+}> = ({ presets, selectedPreset, onSelectPreset }) => {
+    const { t } = useAppContext();
     const clickablePresets = presets.filter(p => p.name !== 'Personalized');
 
     return (
@@ -182,7 +200,7 @@ const PresetSelector: React.FC<{ presets: Preset[] }> = ({ presets }) => {
                     const isFullPower = p.name === 'Full Power';
                     const baseClasses = `flex-1 min-w-[120px] text-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 border-2`;
                     let stateClasses = isSelected ? (isFullPower ? 'bg-accent dark:bg-dark-accent text-accent-text dark:text-dark-accent-text border-accent dark:border-dark-accent font-bold shadow-lg shadow-accent/30' : 'bg-accent dark:bg-dark-accent text-accent-text dark:text-dark-accent-text border-accent dark:border-dark-accent') : (isFullPower ? 'border-accent dark:border-dark-accent bg-transparent text-accent dark:text-dark-accent hover:bg-accent/10 dark:hover:bg-dark-accent/10 font-bold' : 'border-border-color dark:border-dark-border-color bg-tertiary dark:bg-dark-tertiary text-primary-text dark:text-dark-primary-text hover:border-accent/50 dark:hover:border-dark-accent/50');
-                    return <button key={p.name} onClick={() => handleSelectPreset(p)} className={`${baseClasses} ${stateClasses}`}>{p.name}</button>;
+                    return <button key={p.name} onClick={() => onSelectPreset(p)} className={`${baseClasses} ${stateClasses}`}>{p.name}</button>;
                 })}
                 {selectedPreset === 'Personalized' && <div className="flex-1 min-w-[120px] text-center px-4 py-2 text-sm font-medium rounded-md border-2 border-dashed border-accent dark:border-dark-accent bg-accent/5 dark:bg-dark-accent/5 text-accent dark:text-dark-accent">{t('presetPersonalized')}</div>}
             </div>
@@ -207,26 +225,71 @@ interface SettingsViewProps {
  * @returns {JSX.Element | null}
  */
 export const SettingsView: React.FC<SettingsViewProps> = ({ isOpen, onClose, initialTab = 'general', translating, onTranslate, onImprovePromptRequest }) => {
-    const { appSettings, handleSaveSettings, modelsByProvider, t, aiConfig, presets } = useAppContext();
+    const { appSettings, handleSaveSettings, modelsByProvider, t, aiConfig, selectedPreset, presets } = useAppContext();
     const [settings, setSettings] = useState<AppSettings>(appSettings);
+    const [draftAiConfig, setDraftAiConfig] = useState<AIPromptConfig>(aiConfig);
+    const [draftSelectedPreset, setDraftSelectedPreset] = useState<Preset['name'] | null>(selectedPreset);
     const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
 
     useEffect(() => {
         if (isOpen) {
             setSettings(appSettings);
+            setDraftAiConfig(aiConfig);
+            setDraftSelectedPreset(selectedPreset);
             setActiveTab(initialTab);
         }
-    }, [isOpen, appSettings, initialTab]);
+    }, [isOpen, appSettings, aiConfig, selectedPreset, initialTab]);
 
     if (!isOpen) return null;
 
     const handleSave = () => {
-        handleSaveSettings(settings);
+        handleSaveSettings(settings, draftAiConfig, draftSelectedPreset);
         onClose();
     };
     
     const setSetting = (key: keyof AppSettings, value: any) => {
         setSettings(s => ({ ...s, [key]: value }));
+    };
+
+    const handleDraftSelectPreset = (preset: Preset) => {
+        setDraftSelectedPreset(preset.name);
+        setDraftAiConfig(prev => {
+            const updated = { ...prev };
+            for (const key in preset.config) {
+                const promptKey = key as keyof AIPromptConfig;
+                if (updated[promptKey]) {
+                    const presetValue = preset.config[promptKey];
+                    updated[promptKey] = {
+                        ...updated[promptKey],
+                        enabled: presetValue?.enabled !== undefined ? presetValue.enabled : updated[promptKey].enabled,
+                        provider: presetValue?.provider || updated[promptKey].provider,
+                        model: presetValue?.model || updated[promptKey].model,
+                    };
+                }
+            }
+            return updated;
+        });
+    };
+
+    const handleDraftPromptChange = (id: keyof AIPromptConfig, newContent: string) => {
+        setDraftSelectedPreset('Personalized');
+        setDraftAiConfig(prev => ({ ...prev, [id]: { ...prev[id], content: newContent } }));
+    };
+
+    const handleDraftTogglePrompt = (id: keyof AIPromptConfig) => {
+        setDraftSelectedPreset('Personalized');
+        setDraftAiConfig(prev => ({ ...prev, [id]: { ...prev[id], enabled: !prev[id].enabled } }));
+    };
+
+    const handleDraftProviderChange = (id: keyof AIPromptConfig, provider: Provider) => {
+        setDraftSelectedPreset('Personalized');
+        const defaultModel = modelsByProvider[provider]?.[0] || '';
+        setDraftAiConfig(prev => ({ ...prev, [id]: { ...prev[id], provider, model: defaultModel } }));
+    };
+
+    const handleDraftModelChange = (id: keyof AIPromptConfig, model: string) => {
+        setDraftSelectedPreset('Personalized');
+        setDraftAiConfig(prev => ({ ...prev, [id]: { ...prev[id], model } }));
     };
 
     const TabButton: React.FC<{ tabId: SettingsTab; children: React.ReactNode }> = ({ tabId, children }) => (
@@ -325,11 +388,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isOpen, onClose, ini
                     )}
                     {activeTab === 'ai' && (
                         <div className="space-y-6">
-                            <PresetSelector presets={presets} />
+                            <PresetSelector presets={presets} selectedPreset={draftSelectedPreset} onSelectPreset={handleDraftSelectPreset} />
                             <div className="border-t border-border-color dark:border-dark-border-color my-6"></div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:items-start">
-                                {Object.values(aiConfig).map((prompt) => (
-                                     <PromptEditor key={prompt.id} prompt={prompt} onTranslate={(lang) => onTranslate(prompt.id, lang)} onImproveRequest={() => onImprovePromptRequest(prompt.id)} isTranslating={translating === prompt.id} />
+                                {Object.values(draftAiConfig).map((prompt) => (
+                                     <PromptEditor
+                                        key={prompt.id}
+                                        prompt={prompt}
+                                        currentPromptState={prompt}
+                                        onTranslate={(lang) => onTranslate(prompt.id, lang)}
+                                        onImproveRequest={() => onImprovePromptRequest(prompt.id)}
+                                        isTranslating={translating === prompt.id}
+                                        onPromptChange={handleDraftPromptChange}
+                                        onTogglePrompt={handleDraftTogglePrompt}
+                                        onProviderChange={handleDraftProviderChange}
+                                        onModelChange={handleDraftModelChange}
+                                    />
                                 ))}
                             </div>
                         </div>

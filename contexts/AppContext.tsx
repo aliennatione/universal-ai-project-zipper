@@ -12,7 +12,7 @@ interface AppContextType {
     selectedPreset: Preset['name'] | null;
     presets: Preset[];
     t: (key: string, ...args: any[]) => string;
-    handleSaveSettings: (newSettings: AppSettings) => void;
+    handleSaveSettings: (newSettings: AppSettings, newAiConfig?: AIPromptConfig, newPreset?: Preset['name'] | null) => void;
     handleSelectPreset: (preset: Preset) => void;
     handlePromptChange: (id: keyof AIPromptConfig, newContent: string) => void;
     handleTogglePrompt: (id: keyof AIPromptConfig) => void;
@@ -64,16 +64,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return template || key;
     }, [translations]);
 
+    const saveToLocalStorage = useCallback((settings: AppSettings, config: AIPromptConfig, presetName: Preset['name'] | null) => {
+        try {
+            localStorage.setItem('upz-settings', JSON.stringify({
+                appSettings: settings,
+                aiConfig: config,
+                selectedPreset: presetName
+            }));
+        } catch (e) {
+            console.error("Failed to save settings to localStorage", e);
+        }
+    }, []);
+
     useEffect(() => {
         let settingsToLoad = { ...initialSettings };
+        let loadedAiConfig: AIPromptConfig | null = null;
+        let loadedPreset: Preset['name'] | null = null;
+
         try {
             const savedSettingsJSON = localStorage.getItem('upz-settings');
             if (savedSettingsJSON) {
-                const savedSettings = JSON.parse(savedSettingsJSON);
-                // La chiave salvata dall'utente ha la precedenza sulla variabile d'ambiente
+                const parsed = JSON.parse(savedSettingsJSON);
+                const savedSettings = parsed.appSettings || parsed;
                 settingsToLoad = { ...settingsToLoad, ...savedSettings };
                 if (!savedSettings.googleApiKey) {
                     settingsToLoad.googleApiKey = import.meta.env.VITE_GOOGLE_API_KEY || '';
+                }
+                if (parsed.aiConfig) {
+                    loadedAiConfig = parsed.aiConfig;
+                }
+                if (parsed.selectedPreset !== undefined) {
+                    loadedPreset = parsed.selectedPreset;
                 }
             }
         } catch (e) {
@@ -87,39 +108,46 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setAppSettings(settingsToLoad);
         setConfigBaseSettings(settingsToLoad);
 
-        const initialPreset = presets.find(p => p.name === 'Code Generation')!;
-        setSelectedPreset(initialPreset.name);
+        const defaultPresetName = loadedPreset ?? 'Code Generation';
+        setSelectedPreset(defaultPresetName);
         
         setAiConfig(() => {
-            const newConfig = promptsConfig(currentTranslations, settingsToLoad);
+            const defaultConfig = promptsConfig(currentTranslations, settingsToLoad);
+            if (loadedAiConfig) {
+                const mergedConfig = { ...defaultConfig };
+                for (const key in loadedAiConfig) {
+                    const promptKey = key as keyof AIPromptConfig;
+                    if (mergedConfig[promptKey]) {
+                        mergedConfig[promptKey] = {
+                            ...mergedConfig[promptKey],
+                            ...loadedAiConfig[promptKey]
+                        };
+                    }
+                }
+                return mergedConfig;
+            }
+
+            const initialPreset = presets.find(p => p.name === defaultPresetName) || presets.find(p => p.name === 'Code Generation')!;
             for (const key in initialPreset.config) {
                 const promptKey = key as keyof AIPromptConfig;
-                if (newConfig[promptKey]) {
+                if (defaultConfig[promptKey]) {
                     const presetValue = initialPreset.config[promptKey];
-                    if (presetValue?.enabled !== undefined) newConfig[promptKey].enabled = presetValue.enabled;
-                    if (presetValue?.provider) newConfig[promptKey].provider = presetValue.provider;
-                    if (presetValue?.model) newConfig[promptKey].model = presetValue.model;
+                    if (presetValue?.enabled !== undefined) defaultConfig[promptKey].enabled = presetValue.enabled;
+                    if (presetValue?.provider) defaultConfig[promptKey].provider = presetValue.provider;
+                    if (presetValue?.model) defaultConfig[promptKey].model = presetValue.model;
                 }
             }
-            return newConfig;
+            return defaultConfig;
         });
         
         setIsLoadingSettings(false);
     }, []);
 
-    useEffect(() => {
-        setAiConfig(promptsConfig(translations, appSettings));
-        const currentPreset = presets.find(p => p.name === selectedPreset);
-        if (currentPreset) {
-            handleSelectPreset(currentPreset, true);
-        }
-    }, [appSettings.globalLanguage, translations, appSettings]);
-
     const handleSelectPreset = useCallback((preset: Preset, forceUpdate = false) => {
         if (preset.name === selectedPreset && !forceUpdate) return;
         
         setSelectedPreset(preset.name);
-        setAiConfig(() => {
+        setAiConfig(currentConfig => {
             const newConfig = promptsConfig(translations, appSettings);
             for (const key in preset.config) {
                 const promptKey = key as keyof AIPromptConfig;
@@ -130,9 +158,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     if (presetValue?.model) newConfig[promptKey].model = presetValue.model;
                 }
             }
+            saveToLocalStorage(appSettings, newConfig, preset.name);
             return newConfig;
         });
-    }, [appSettings, translations, selectedPreset]);
+    }, [appSettings, translations, selectedPreset, saveToLocalStorage]);
     
     useEffect(() => {
         const fetchAllModels = async () => {
@@ -157,16 +186,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         fetchAllModels();
     }, [appSettings]);
 
-    const handleSaveSettings = useCallback((newSettings: AppSettings) => {
-        setAiConfig(currentConfig => {
-            const oldDefaults = { provider: configBaseSettings?.defaultProvider || 'google', model: configBaseSettings?.defaultModel || 'gemini-1.5-flash' };
-            const newDefaults = { provider: newSettings.defaultProvider, model: newSettings.defaultModel };
+    const handleSaveSettings = useCallback((
+        newSettings: AppSettings,
+        newAiConfig?: AIPromptConfig,
+        newPreset?: Preset['name'] | null
+    ) => {
+        const updatedConfig = newAiConfig ? { ...newAiConfig } : { ...aiConfig };
+        const updatedPreset = newPreset !== undefined ? newPreset : selectedPreset;
 
-            if (oldDefaults.provider === newDefaults.provider && oldDefaults.model === newDefaults.model) {
-                return currentConfig;
-            }
+        const oldDefaults = { provider: configBaseSettings?.defaultProvider || 'google', model: configBaseSettings?.defaultModel || 'gemini-1.5-flash' };
+        const newDefaults = { provider: newSettings.defaultProvider, model: newSettings.defaultModel };
 
-            const updatedConfig = { ...currentConfig };
+        if (oldDefaults.provider !== newDefaults.provider || oldDefaults.model !== newDefaults.model) {
             for (const key in updatedConfig) {
                 const promptKey = key as keyof AIPromptConfig;
                 const prompt = updatedConfig[promptKey];
@@ -175,8 +206,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     updatedConfig[promptKey] = { ...prompt, provider: newDefaults.provider, model: newDefaults.model };
                 }
             }
-            return updatedConfig;
-        });
+        }
 
         if (configBaseSettings?.promptImprovementProvider === configBaseSettings?.defaultProvider && configBaseSettings?.promptImprovementModel === configBaseSettings?.defaultModel) {
             newSettings.promptImprovementProvider = newSettings.defaultProvider;
@@ -189,31 +219,48 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
         setAppSettings(newSettings);
         setConfigBaseSettings(newSettings);
-        
-        // Ora salva TUTTE le impostazioni, inclusa la chiave Google, nel localStorage.
-        localStorage.setItem('upz-settings', JSON.stringify(newSettings));
-    }, [configBaseSettings]);
+        setAiConfig(updatedConfig);
+        setSelectedPreset(updatedPreset);
+
+        saveToLocalStorage(newSettings, updatedConfig, updatedPreset);
+    }, [aiConfig, selectedPreset, configBaseSettings, saveToLocalStorage]);
 
     const handlePromptChange = useCallback((id: keyof AIPromptConfig, newContent: string) => {
         setSelectedPreset('Personalized');
-        setAiConfig(prev => ({ ...prev, [id]: { ...prev[id], content: newContent } }));
-    }, []);
+        setAiConfig(prev => {
+            const next = { ...prev, [id]: { ...prev[id], content: newContent } };
+            saveToLocalStorage(appSettings, next, 'Personalized');
+            return next;
+        });
+    }, [appSettings, saveToLocalStorage]);
 
     const handleTogglePrompt = useCallback((id: keyof AIPromptConfig) => {
         setSelectedPreset('Personalized');
-        setAiConfig(prev => ({ ...prev, [id]: { ...prev[id], enabled: !prev[id].enabled } }));
-    }, []);
+        setAiConfig(prev => {
+            const next = { ...prev, [id]: { ...prev[id], enabled: !prev[id].enabled } };
+            saveToLocalStorage(appSettings, next, 'Personalized');
+            return next;
+        });
+    }, [appSettings, saveToLocalStorage]);
     
     const handleProviderChange = useCallback((id: keyof AIPromptConfig, provider: Provider) => {
         setSelectedPreset('Personalized');
         const defaultModel = modelsByProvider[provider]?.[0] || '';
-        setAiConfig(prev => ({ ...prev, [id]: { ...prev[id], provider, model: defaultModel } }));
-    }, [modelsByProvider]);
+        setAiConfig(prev => {
+            const next = { ...prev, [id]: { ...prev[id], provider, model: defaultModel } };
+            saveToLocalStorage(appSettings, next, 'Personalized');
+            return next;
+        });
+    }, [appSettings, modelsByProvider, saveToLocalStorage]);
 
     const handleModelChange = useCallback((id: keyof AIPromptConfig, model: string) => {
         setSelectedPreset('Personalized');
-        setAiConfig(prev => ({ ...prev, [id]: { ...prev[id], model }}));
-    }, []);
+        setAiConfig(prev => {
+            const next = { ...prev, [id]: { ...prev[id], model } };
+            saveToLocalStorage(appSettings, next, 'Personalized');
+            return next;
+        });
+    }, [appSettings, saveToLocalStorage]);
 
     const value = useMemo(() => ({
         appSettings, aiConfig, modelsByProvider, isLoadingSettings, selectedPreset, presets, t,
